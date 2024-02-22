@@ -1,3 +1,5 @@
+#!python3
+
 import hyperdiv as hd
 import random
 import ast
@@ -60,7 +62,7 @@ def home():
 
 
 @router.route("/{operator}/{max}")
-def operator(operator, max):
+def operator_page(operator, max):
     # Todo validate operator
     if operator not in ["+", "-", "*", "/"]:
         hd.markdown("Invalid operator: {operator}")
@@ -89,6 +91,8 @@ def operator(operator, max):
     ):
         hd.button(state.current_question)
         hd.button("=")
+        hd.text_input(value=state.user_input, placeholder="answer")
+
     with hd.hbox(
         padding=1,
         gap=1,
