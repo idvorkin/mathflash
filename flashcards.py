@@ -74,7 +74,7 @@ def make_header(state, extra=""):
     return state.header
 
 
-def one_second_tick(state):
+def on_every_second(state):
     time.sleep(1)
     if not state.game_state == FlashcardState.Answering:
         return
@@ -162,9 +162,9 @@ def operator_page(operator, max):
 
     # start the game timer loop
     timer_task = hd.task()
-    timer_task.run(one_second_tick, state)
+    timer_task.run(on_every_second, state)
     if not timer_task.running:
-        timer_task.rerun(one_second_tick, state)
+        timer_task.rerun(on_every_second, state)
 
     if state.game_state == FlashcardState.WelcomeDialog:
         make_welcome_dialog(state)
