@@ -9,7 +9,7 @@ pipenv shell
 ```
 Run the server with:
 ```
-./flashcards.py
+./main.py
 
 ```
 You can pass in the operator and the maxnumber on the path:

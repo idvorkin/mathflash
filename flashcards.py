@@ -8,9 +8,6 @@ import time
 from enum import Enum, auto
 
 
-router = hd.router()
-
-
 class FlashcardState(Enum):
     WelcomeDialog = auto()
     Answering = auto()
@@ -70,26 +67,6 @@ def make_header(state, extra=""):
 
 """
     state.header += extra
-
-
-@router.route("/")
-def home():
-    hd.markdown(
-        """
-
-# Welcome to math flash!
-
-### Future features
-* Eventually we'll have per user login,
-    * Which will load settings and record answers to DB
-
-### For now
-
-* You need to pass the URL yourself
-    * [/subtract/20](/subtract/20)
-    * [/add/7](/subtract/7)
- """
-    )
 
 
 def one_second_tick(state):
@@ -152,7 +129,6 @@ def FinishedDialog(state):
     dialog.opened = True
 
 
-@router.route("/{operator}/{max}")
 def operator_page(operator, max):
     operator = english_to_operator.get(operator, operator)
     state = make_operator_state(operator, max)
@@ -212,10 +188,3 @@ def operator_page(operator, max):
                 state.user_input = ""
 
     make_number_pad(state)
-
-
-def main():
-    router.run()
-
-
-hd.run(main)
