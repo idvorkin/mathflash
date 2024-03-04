@@ -1,5 +1,6 @@
 import ast
 
+
 # Thank you stack overflow
 def safe_eval(s):
     whitelist = (
@@ -23,3 +24,17 @@ def safe_eval(s):
         )
         return result
     return 0
+
+
+operator_to_english = {
+    "+": "adding",
+    "-": "subtracting",
+    "*": "multiplying",
+    "/": "dividing",
+}
+english_to_operator = {
+    "add": "+",
+    "subtract": "-",
+    "multiply": "*",
+    "divide": "/",
+}
