@@ -14,7 +14,11 @@ class FlashcardState(Enum):
     FinishedDialog = auto()
 
 
-def make_operator_state(operator, max):
+def init_operator_state(operator, max):
+    operator = english_to_operator.get(operator, operator)
+    # hd.state is a singleton and only initalized on the first call to hd.state
+    # on the webpage
+
     return hd.state(
         name="Igor_Load_from_DB",
         user_input="",
@@ -67,6 +71,7 @@ def make_header(state, extra=""):
 
 """
     state.header += extra
+    return state.header
 
 
 def one_second_tick(state):
@@ -78,27 +83,26 @@ def one_second_tick(state):
         state.remaining_time -= 1
 
 
-def make_number_pad(state):
-    def make_button(n):
-        b1 = hd.button(n)
-        if b1.clicked:
-            state.user_input += n
-
-    with hd.hbox(
+def make_row():
+    return hd.hbox(
         padding=1,
         gap=1,
         border="1px solid yellow",
-    ):
+    )
+
+
+def make_number_pad(state):
+    def make_button(n):
+        if hd.button(n).clicked:
+            state.user_input += n
+
+    with make_row():
         make_button("1")
         make_button("2")
         make_button("3")
         make_button("4")
         make_button("5")
-    with hd.hbox(
-        padding=1,
-        gap=1,
-        border="1px solid yellow",
-    ):
+    with make_row():
         make_button("6")
         make_button("7")
         make_button("8")
@@ -106,7 +110,7 @@ def make_number_pad(state):
         make_button("0")
 
 
-def WelcomeDialog(state):
+def make_welcome_dialog(state):
     dialog = hd.dialog(f"Welcome {state.name}! ")
     with dialog:
         hd.markdown(
@@ -122,69 +126,64 @@ We're going to try to complete {state.total_question} questions in {state.total_
         dialog.opened = True
 
 
-def FinishedDialog(state):
+def make_finished_dialog(state):
     dialog = hd.dialog("Congrats you're all done!")
     with dialog:
         hd.text(f"You got {state.correct_answers} correct!")
     dialog.opened = True
 
 
-def operator_page(operator, max):
-    operator = english_to_operator.get(operator, operator)
-    state = make_operator_state(operator, max)
-    # Todo validate operator
-    if operator not in ["+", "-", "*", "/"]:
-        hd.markdown("Invalid operator: {operator}")
+def on_submit_answer(state):
+    valid_answer_attempt = state.user_input.isdigit()
+    if not valid_answer_attempt:
+        # Just clear invalid user input
+        state.user_input = ""
         return
 
-    make_header(state)
-    hd.markdown(state.header)
+    state.questions_complete += 1
+    is_answer_correct = int(state.user_input) == utils.safe_eval(
+        state.current_question.strip()
+    )
+    if is_answer_correct:
+        state.correct_answers += 1
 
-    # start the loop
-    onesecondtask = hd.task()
-    onesecondtask.run(one_second_tick, state)
-    if not onesecondtask.running:
-        onesecondtask.rerun(one_second_tick, state)
+    # create a new question
+    make_math_question(state)
+    state.user_input = ""
+
+
+def operator_page(operator, max):
+    if operator not in utils.english_to_operator.keys():
+        hd.markdown(f"Invalid operator: {operator}")
+        return
+
+    state = init_operator_state(operator, max)
+    hd.markdown(make_header(state))
+
+    # start the game timer loop
+    timer_task = hd.task()
+    timer_task.run(one_second_tick, state)
+    if not timer_task.running:
+        timer_task.rerun(one_second_tick, state)
 
     if state.game_state == FlashcardState.WelcomeDialog:
-        WelcomeDialog(state)
+        make_welcome_dialog(state)
     if state.game_state == FlashcardState.FinishedDialog:
-        FinishedDialog(state)
+        make_finished_dialog(state)
 
     # Draw the question
-    with hd.hbox(
-        padding=1,
-        gap=1,
-        border="1px solid yellow",
-    ):
+    with make_row():
         hd.button(state.current_question)
         hd.button("=")
         hd.text_input(value=state.user_input, placeholder="answer")
 
     # Draw the control buttons
-    with hd.hbox(
-        padding=1,
-        gap=1,
-        border="1px solid yellow",
-    ):
+    with make_row():
         if hd.button("back").clicked:
             state.user_input = state.user_input[:-1]
         if hd.button("clear").clicked:
             state.user_input = ""
         if hd.button("submit").clicked:
-            if not state.user_input.isdigit():
-                # if can't convert to int, just clear it
-                state.user_input = ""
-            else:
-                # it's a valid digit
-                # evaluate the answer
-                state.questions_complete += 1
-                is_answer_correct = int(state.user_input) == utils.safe_eval(
-                    state.current_question.strip()
-                )
-                if is_answer_correct:
-                    state.correct_answers += 1
-                    make_math_question(state)
-                state.user_input = ""
+            on_submit_answer(state)
 
     make_number_pad(state)
