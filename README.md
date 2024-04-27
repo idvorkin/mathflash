@@ -12,6 +12,17 @@ Run the server with:
 ./main.py
 
 ```
+Deploy the server with the following command:
+```
+modal deploy modal_server.py
+```
+
+Do local testing of deployment environment with (but careful of caching)
+```
+modal serve modal_server.py
+```
+
+
 You can pass in the operator and the maxnumber on the path:
 
 * http://localhost:8888/+/15
