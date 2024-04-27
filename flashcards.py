@@ -91,22 +91,28 @@ def make_row():
     )
 
 
+# Get inspired by the calculator example
+# https://github.com/hyperdiv/hyperdiv-apps/blob/main/calculator/calculator/main.py
+
+
 def make_number_pad(state):
     def make_button(n):
-        if hd.button(n).clicked:
+        if hd.button(n, circle=True).clicked:
             state.user_input += n
 
     with make_row():
         make_button("1")
         make_button("2")
         make_button("3")
+    with make_row():
         make_button("4")
         make_button("5")
-    with make_row():
         make_button("6")
+    with make_row():
         make_button("7")
         make_button("8")
         make_button("9")
+    with make_row():
         make_button("0")
 
 
