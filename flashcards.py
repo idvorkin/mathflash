@@ -113,7 +113,14 @@ def make_number_pad(state):
         make_button("8")
         make_button("9")
     with make_row():
+        if hd.button("✖", circle=True).clicked:
+            state.user_input = ""
+
         make_button("0")
+
+        if hd.button("⌫", circle=True).clicked:
+            state.user_input = state.user_input[:-1]
+
 
 
 def make_welcome_dialog(state):
@@ -185,10 +192,6 @@ def operator_page(operator, max):
 
     # Draw the control buttons
     with make_row():
-        if hd.button("back").clicked:
-            state.user_input = state.user_input[:-1]
-        if hd.button("clear").clicked:
-            state.user_input = ""
         if hd.button("submit").clicked:
             on_submit_answer(state)
 

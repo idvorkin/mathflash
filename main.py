@@ -9,7 +9,9 @@ cli_app = typer.Typer()
 router = hd.router()
 
 def main():
-    router.run()
+    template = hd.template(title="Math Flash")
+    with template.body:
+        router.run()
 
 @router.route("/")
 def homepage():
