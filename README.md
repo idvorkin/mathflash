@@ -1,13 +1,15 @@
 # mathflash
 
-Flashcards, based on the https://hyperdiv.io/ framework
+Flashcards, based on the https://hyperdiv.io/ framework.
+Connect to it in "production" [here](https://idvorkin--mathflash-fastapi-app.modal.run/)
 
 Setup the environment with:
 ```
 pipenv install
 pipenv shell
+
 ```
-Run the server with:
+Run the debug server with:
 ```
 ./main.py
 
