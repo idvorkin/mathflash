@@ -15,7 +15,8 @@ def home():
 
 * You need to pass the URL yourself
     * [/subtract/20](/subtract/20)
-    * [/add/7](/subtract/7)
+    * [/add/7](/add/7)
+    * [/multiply/14](/multiply/14)
 
 See the [source on github](https://github.com/idvorkin/mathflash)
  """
