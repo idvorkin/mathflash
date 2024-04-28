@@ -88,6 +88,7 @@ def make_row():
         padding=1,
         gap=1,
         border="1px solid yellow",
+        justify="center",
     )
 
 
@@ -120,7 +121,6 @@ def make_number_pad(state):
 
         if hd.button("⌫", circle=True).clicked:
             state.user_input = state.user_input[:-1]
-
 
 
 def make_welcome_dialog(state):
@@ -186,13 +186,12 @@ def operator_page(operator, max):
 
     # Draw the question
     with make_row():
-        hd.button(state.current_question)
-        hd.button("=")
-        hd.text_input(value=state.user_input, placeholder="answer")
+        hd.markdown(f"## {state.current_question}")
 
     # Draw the control buttons
     with make_row():
-        if hd.button("submit").clicked:
+        hd.text_input(value=state.user_input, placeholder="answer")
+        if hd.button("✅").clicked:
             on_submit_answer(state)
 
     make_number_pad(state)

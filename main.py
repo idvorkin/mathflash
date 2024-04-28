@@ -1,17 +1,25 @@
 #!python3
+
+# pylint: disable=missing-function-docstring
 import hyperdiv as hd
-import homepage as hp
 import typer
+
 import flashcards as fc
+import homepage as hp
+
 # from icecream import ic
 
 cli_app = typer.Typer()
 router = hd.router()
 
+
 def main():
-    template = hd.template(title="Math Flash")
-    with template.body:
-        router.run()
+    # template gives us a nice header and side bar.
+    # Too early, and messes up pagination
+    # template = hd.template(title="Math Flash")
+    # with template.body:
+    router.run()
+
 
 @router.route("/")
 def homepage():
@@ -25,7 +33,9 @@ def operator_page(operator, max):
 
 @cli_app.command()
 def run():
-    hd.run(main)
+    indexpage = hd.index_page(title="Math Flash", description="Get Great at Math")
+    hd.run(main, index_page=indexpage)
+
 
 if __name__ == "__main__":
     cli_app()
