@@ -34,7 +34,7 @@ def fastapi_app():
 
 @app.function()
 @web_app.get("/{full_path:path}")
-async def get_redirect_to_server(request: Request, full_path: str):
+async def get_redirect_to_mathflash(request: Request, full_path: str):
     server_url = state.get(KEY.server_url, None)
     is_up = is_website_up(server_url)
     if not is_up:
@@ -43,7 +43,7 @@ async def get_redirect_to_server(request: Request, full_path: str):
 
 
 @app.function(concurrency_limit=1, timeout=300)
-def serve_on_modal():
+def run_mathflash_on_modal():
     ic("called at", datetime.datetime.now())
     port = 8887  # tell hyperdiv to bind to a port (doesn't matter which)
     os.environ["HD_HOST"] = "0.0.0.0"
