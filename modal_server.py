@@ -59,7 +59,7 @@ def run_mathflash_on_modal():
 def start_server_and_wait_for_it_to_be_up():
     print("Server is not running, starting it now ...")
     server_url = state[KEY.server_url] = ""  # type:ignore
-    Function.lookup(app.name, "serve_on_modal").spawn()  # type: ignore
+    Function.lookup(app.name, run_mathflash_on_modal.__name__).spawn()  # type: ignore
     # now busy wait for the server to start
     while True:
         print("Waiting for server to start ...")
