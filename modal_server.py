@@ -2,7 +2,7 @@
 from icecream import ic
 from modal import Image, App, forward, Function, Dict, asgi_app
 from fastapi import FastAPI, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import HTMLResponse
 import datetime
 import requests
 import main
@@ -39,7 +39,36 @@ async def get_redirect_to_mathflash(request: Request, full_path: str):
     is_up = is_website_up(server_url)
     if not is_up:
         start_server_and_wait_for_it_to_be_up()
-    return RedirectResponse(f"{server_url}/{full_path}", status_code=303)
+
+    url = f"{server_url}/{full_path}"
+    html_page = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Flash</title>
+<style>
+  body, html {{
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    }}
+  iframe {{
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }}
+</style>
+</head>
+<body>
+<iframe src="{url}"></iframe>
+</body>
+</html>
+    """
+    # return RedirectResponse(, status_code=303)
+    return HTMLResponse(html_page)
 
 
 @app.function(concurrency_limit=1, timeout=300)
