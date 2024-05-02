@@ -62,11 +62,11 @@ def make_math_question(state):
     make_header(state, extra)
 
 
-def handle_toast(state):
+def make_toasts(state):
     if state.toast == ToastState.Empty:
         return
 
-    should_show_toast = (datetime.now() - state.toast_start) < timedelta(seconds=0.5)
+    should_show_toast = (datetime.now() - state.toast_start) < timedelta(seconds=0.8)
 
     if not should_show_toast:
         state.toast = ToastState.Empty
@@ -80,8 +80,16 @@ def handle_toast(state):
     if state.toast == ToastState.TryAgain:
         show_tryagain = True
 
-    hd.alert("Correct!", variant="success", opened=show_correct)
-    hd.alert("Close - Try Again!", variant="warning", opened=show_tryagain)
+    font_size = 1.1  # this isn't seeming to be honored, but close enough
+    hd.alert(
+        "Hooray - Correct!", font_size=font_size, variant="success", opened=show_correct
+    )
+    hd.alert(
+        "Close - Try Again!",
+        font_size=font_size,
+        variant="warning",
+        opened=show_tryagain,
+    )
 
 
 ### [ {state.remaining_time} of {state.total_time} seconds left ]
@@ -100,8 +108,8 @@ def make_header(state, extra=""):
     correct_string = (
         f"- {state.correct_answers} correct" if state.correct_answers > 0 else ""
     )
-    state.header = f"""# Let's practice {operator_to_english[state.operator]}
-### Progress {state.questions_complete}/{state.total_question} {correct_string}
+    state.header = f"""### Let's practice {operator_to_english[state.operator]}
+Progress {state.questions_complete}/{state.total_question} {correct_string}
 
 """
     state.header += extra
@@ -130,14 +138,14 @@ def make_row():
 # https://github.com/hyperdiv/hyperdiv-apps/blob/main/calculator/calculator/main.py
 
 
-def pretty_button(label, background_color="blue", width=5, pill=False, circle=True):
+def pretty_button(label, background_color="blue", width=4, pill=False, circle=True):
     return hd.button(
         label,
         width=width,  # type:ignore
-        height=5,
+        height=width,
         circle=circle,
         pill=pill,
-        font_size=1.8,
+        font_size=1.5,
         label_style=hd.style(align="center", justify="center"),
         background_color=background_color,
         font_color="neutral-50",
@@ -236,7 +244,6 @@ def operator_page(operator, max):
         make_finished_dialog(state)
 
     # Draw the question
-    handle_toast(state)
     with make_row():
         hd.markdown(f"## {state.current_question}")
 
@@ -247,3 +254,4 @@ def operator_page(operator, max):
             on_submit_answer(state)
 
     make_number_pad(state)
+    make_toasts(state)
