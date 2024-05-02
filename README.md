@@ -1,7 +1,7 @@
 # mathflash
 
 Flashcards, based on the https://hyperdiv.io/ framework.
-Connect to it in "production" [here](https://idvorkin--mathflash-fastapi-app.modal.run/)
+Connect to it in "production" [here](https://bit.ly/imathflash)
 
 Setup the environment with:
 ```
