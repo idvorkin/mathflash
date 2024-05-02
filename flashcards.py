@@ -127,9 +127,8 @@ def on_every_second(state):
 
 def make_row():
     return hd.hbox(
-        padding=1,
+        padding=0.5,
         gap=1,
-        border="1px solid yellow",
         justify="center",
     )
 
@@ -250,7 +249,7 @@ def operator_page(operator, max):
     # Draw the control buttons
     with make_row():
         hd.text_input(value=state.user_input, placeholder="answer")
-        if hd.button("✅", background_color="green").clicked:
+        if hd.button("GO", background_color="green", font_color="neutral-50").clicked:
             on_submit_answer(state)
 
     make_number_pad(state)
