@@ -8,6 +8,7 @@ import requests
 import main
 import os
 import time
+import random
 
 
 # setup modal app state
@@ -15,6 +16,9 @@ image = Image.debian_slim().pip_install(["hyperdiv", "icecream", "requests"])
 app = App("mathflash")  # Note: prior to April 2024, "app" was called "stub"
 app.image = image
 state = Dict.from_name(f"{app.name}-default-dict", create_if_missing=True)
+question_attempts = Dict.from_name(
+    f"{app.name}-question_attemps-dict", create_if_missing=True
+)
 
 
 class KEY:
@@ -30,6 +34,37 @@ web_app = FastAPI()
 @asgi_app()
 def fastapi_app():
     return web_app
+
+
+@app.function()
+@web_app.put("/persist_attempt")
+async def persist_question_attempt(
+    time, user, a, b, operation, right_answer, user_answer, correct, duration, other
+):
+    # for now just write to a modal dict
+    key = random.randint(0, 2_000_000_000)
+    question_attempts[key] = [
+        time,
+        user,
+        a,
+        b,
+        operation,
+        right_answer,
+        user_answer,
+        correct,
+        duration,
+        other,
+    ]  # type:ignore
+
+
+@app.function()
+@web_app.get("/attempts")
+async def get_question_attempts():
+    # for now just write to a modal dict
+    # create a csv from question_attempts
+    csv = "time,user,a,b,operation,right_answer,user_answer,correct,duration,other"
+    csv += "\n".join([",".join(map(str, v)) for v in question_attempts.values()])  # type:ignore
+    return HTMLResponse(content=csv, status_code=200)
 
 
 @app.function()
