@@ -55,6 +55,7 @@ def init_operator_state(operator, max):
         operator=operator,
         n1=0,
         n2=0,
+        time_user_started_question=datetime.now(),
         current_question="",
         header="",
         correct_answers=0,
@@ -76,6 +77,7 @@ def make_math_question(state):
         n1, n2 = n2, n1
     state.current_question = f"  {n1} {state.operator} {n2}"
     state.n1, state.n2 = n1, n2
+    state.time_user_started_question = datetime.now()
 
     extra = ""
     if state.questions_complete >= state.total_question:
@@ -262,7 +264,7 @@ def on_submit_answer(state):
         state.toast = ToastState.TryAgain
 
     def state_to_attempt(state):
-        duration = 9999
+        duration = datetime.now() - state.time_user_started_question
         current_time = str(datetime.now())
         return LogQuestionAttempt(
             current_time=current_time,
@@ -273,7 +275,7 @@ def on_submit_answer(state):
             right_answer=7,
             user_answer=int(state.user_input),
             correct=is_answer_correct,
-            duration_in_milliseconds=duration,
+            duration_in_milliseconds=int(duration.total_seconds() * 1000),
             other="other-stuff-to-add",
         )
 
