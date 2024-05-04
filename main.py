@@ -1,6 +1,7 @@
 #!python3
 
 # pylint: disable=missing-function-docstring
+import os
 import hyperdiv as hd
 import typer
 
@@ -32,8 +33,9 @@ def operator_page(operator, max):
 
 
 @cli_app.command()
-def run():
+def run(port=8999):
     indexpage = hd.index_page(title="Math Flash", description="Get Great at Math")
+    os.environ["HD_PORT"] = str(port)
     hd.run(main, index_page=indexpage)
 
 
