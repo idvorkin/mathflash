@@ -129,22 +129,26 @@ def run_mathflash_on_modal():
 
     ic("Using Port", port)
     os.environ["HD_HOST"] = "0.0.0.0"
-    os.environ["HD_PORT"] = str(port)
     with forward(port) as tunnel:
         state[KEY.server_url] = tunnel.url  # type:ignore # tunnel.url is the public URL of the server
         state[KEY.innvocation_count] = state.get(KEY.innvocation_count, 0) + 1  # type:ignore
         # this call is blocking, so this never returns
         # Run the hyperdiv app
-        main.run()
+        main.run(port=port)
 
 
 def start_server_and_wait_for_it_to_be_up():
     print("Server is not running, starting it now ...")
     state[KEY.server_url] = ""  # type:ignore - clear cached server as we're creating a new one
-    Function.lookup(app.name, "run_mathflash_on_modal").spawn()  # type: ignore
+    mathflash_server = Function.lookup(app.name, "run_mathflash_on_modal")  # type:ignore
+    ic(mathflash_server)
+    ret = mathflash_server.spawn()  # type: ignore
+    ic(ret)
     # now busy wait for the server to start
+    i = 0
     while True:
-        print("Waiting for server to start ...")
+        i += 1
+        print(f"Waiting for server to start [{i}]...")
         server_url = state.get(KEY.server_url, None)
         is_up = is_website_up(server_url)
         if is_up:
