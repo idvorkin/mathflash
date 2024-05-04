@@ -24,6 +24,9 @@ Do local testing of deployment environment with (but careful of caching)
 modal serve modal_server.py
 ```
 
+See user stats with: https://idvorkin--mathflash-fastapi-app.modal.run/attempts. Use curl/wget and import to platform of your choice.
+
+    curl https://idvorkin--mathflash-fastapi-app.modal.run/attempts > foo.csv
 
 You can pass in the operator and the maxnumber on the path:
 
