@@ -10,7 +10,7 @@ import main
 import os
 import time
 import random
-
+import socket
 
 # setup modal app state
 image = Image.debian_slim().pip_install(
@@ -65,7 +65,11 @@ async def get_question_attempts():
     # for now just write to a modal dict
     # create a csv from question_attempts
     csv = "time,user,a,b,operation,right_answer,user_answer,correct,duration,other\n"
-    for _, attempt in question_attempts.items():
+
+    # sort items by time before returning
+    items = list(question_attempts.items())
+    items.sort(key=lambda x: x[1]["time"])
+    for _, attempt in items:
         csv += f"{attempt['time']},{attempt['user']},{attempt['a']},{attempt['b']},{attempt['operation']},{attempt['right_answer']},{attempt['user_answer']},{attempt['correct']},{attempt['duration']},{attempt['other']}\n"
     return HTMLResponse(csv)
 
@@ -113,6 +117,17 @@ async def get_redirect_to_mathflash(request: Request, full_path: str):
 def run_mathflash_on_modal():
     ic("called at", datetime.datetime.now())
     port = 8887  # tell hyperdiv to bind to a port (doesn't matter which)
+
+    def is_port_in_use(port):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            return s.connect_ex(("0.0.0.0", port)) == 0
+
+    for p in range(port, port + 1000):
+        if not is_port_in_use(p):
+            port = p
+            break
+
+    ic("Using Port", port)
     os.environ["HD_HOST"] = "0.0.0.0"
     os.environ["HD_PORT"] = str(port)
     with forward(port) as tunnel:
