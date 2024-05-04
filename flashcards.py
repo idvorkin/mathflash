@@ -12,17 +12,18 @@ from icecream import ic
 
 from pydantic import BaseModel
 
+
 class LogQuestionAttempt(BaseModel):
     user: str
     current_time: datetime
     user: str
     a: int
     b: int
-    operation : str
+    operation: str
     right_answer: int
     user_answer: int
     correct: bool
-    duration_in_milliseconds: int # milliseconds
+    duration_in_milliseconds: int  # milliseconds
     other: str
 
 
@@ -51,8 +52,8 @@ def init_operator_state(operator, max):
         questions_complete=0,
         max=int(max),
         operator=operator,
-        n1 = 0,
-        n2 = 0,
+        n1=0,
+        n2=0,
         current_question="",
         header="",
         correct_answers=0,
@@ -80,6 +81,7 @@ def make_math_question(state):
         extra = "\n# Congrats you are done!"
 
     make_header(state, extra)
+
 
 def persist_question_attempt(attempt: LogQuestionAttempt):
     # hard code for now
@@ -250,10 +252,21 @@ def on_submit_answer(state):
     else:
         state.toast = ToastState.TryAgain
 
-
     def persist():
         duration = 9999
-        attempt = LogQuestionAttempt(current_time=current_time, user=state.user, a=state.n1, b=state.n2, operation=state.operation, right_answer=7, user_answer=int(state.user_input), correct=is_answer_correct, duration_in_milliseconds=duration, other="other-stuff-to-add")
+        current_time = datetime.now()
+        attempt = LogQuestionAttempt(
+            current_time=current_time,
+            user=state.name,
+            a=state.n1,
+            b=state.n2,
+            operation=state.operator,
+            right_answer=7,
+            user_answer=int(state.user_input),
+            correct=is_answer_correct,
+            duration_in_milliseconds=duration,
+            other="other-stuff-to-add",
+        )
         persist_question_attempt(attempt)
 
     hd.task().run(persist)
