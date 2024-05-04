@@ -1,5 +1,6 @@
 #!python3
 
+import requests
 import utils
 from utils import operator_to_english, english_to_operator
 import hyperdiv as hd
@@ -7,6 +8,22 @@ import random
 import time
 from enum import Enum, auto
 from datetime import datetime, timedelta
+from icecream import ic
+
+from pydantic import BaseModel
+
+class LogQuestionAttempt(BaseModel):
+    user: str
+    current_time: datetime
+    user: str
+    a: int
+    b: int
+    operation : str
+    right_answer: int
+    user_answer: int
+    correct: bool
+    duration_in_milliseconds: int # milliseconds
+    other: str
 
 
 class FlashcardState(Enum):
@@ -34,6 +51,8 @@ def init_operator_state(operator, max):
         questions_complete=0,
         max=int(max),
         operator=operator,
+        n1 = 0,
+        n2 = 0,
         current_question="",
         header="",
         correct_answers=0,
@@ -54,12 +73,25 @@ def make_math_question(state):
     if n2 > n1:
         n1, n2 = n2, n1
     state.current_question = f"  {n1} {state.operator} {n2}"
+    state.n1, state.n2 = n1, n2
 
     extra = ""
     if state.questions_complete >= state.total_question:
         extra = "\n# Congrats you are done!"
 
     make_header(state, extra)
+
+def persist_question_attempt(attempt: LogQuestionAttempt):
+    # hard code for now
+    # server = "https://idvorkin--mathflash-fastapi-app.modal.run/"
+    server = "https://idvorkin--mathflash-fastapi-app-dev.modal.run"
+
+    # post a request to the server
+
+    start = time.time()
+    response = requests.post(f"{server}/persist_attempt", attempt.model_dump())
+    ic(response, time.time() - start)
+    pass
 
 
 def make_toasts(state):
@@ -217,6 +249,14 @@ def on_submit_answer(state):
         state.toast = ToastState.Correct
     else:
         state.toast = ToastState.TryAgain
+
+
+    def persist():
+        duration = 9999
+        attempt = LogQuestionAttempt(current_time=current_time, user=state.user, a=state.n1, b=state.n2, operation=state.operation, right_answer=7, user_answer=int(state.user_input), correct=is_answer_correct, duration_in_milliseconds=duration, other="other-stuff-to-add")
+        persist_question_attempt(attempt)
+
+    hd.task().run(persist)
 
     # create a new question
     make_math_question(state)

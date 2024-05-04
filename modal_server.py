@@ -5,6 +5,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 import datetime
 import requests
+from flashcards import LogQuestionAttempt
 import main
 import os
 import time
@@ -37,34 +38,20 @@ def fastapi_app():
 
 
 @app.function()
-@web_app.put("/persist_attempt")
-async def persist_question_attempt(
-    time, user, a, b, operation, right_answer, user_answer, correct, duration, other
-):
+@web_app.post("/persist_attempt")
+async def persist_attempt( attempt: LogQuestionAttempt):
     # for now just write to a modal dict
     key = random.randint(0, 2_000_000_000)
-    question_attempts[key] = [
-        time,
-        user,
-        a,
-        b,
-        operation,
-        right_answer,
-        user_answer,
-        correct,
-        duration,
-        other,
-    ]  # type:ignore
-
+    question_attempts[key] = attempt.model_dump()  # type:ignore
 
 @app.function()
 @web_app.get("/attempts")
 async def get_question_attempts():
     # for now just write to a modal dict
     # create a csv from question_attempts
-    csv = "time,user,a,b,operation,right_answer,user_answer,correct,duration,other"
-    csv += "\n".join([",".join(map(str, v)) for v in question_attempts.values()])  # type:ignore
-    return HTMLResponse(content=csv, status_code=200)
+    csv = "time,user,a,b,operation,right_answer,user_answer,correct,duration,other\n"
+    csv += "\n".join(question_attempts.values())
+    return HTMLResponse(csv)
 
 
 @app.function()
