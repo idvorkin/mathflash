@@ -100,11 +100,13 @@ def persist_question_attempt(attempt: LogQuestionAttempt):
         attempt.duration_in_milliseconds,
         attempt.current_time,
     )
-    response = requests.post(f"{server}/persist_attempt", json=attempt.model_dump())
+    # annoying modal can't run pydantic 2.0 not sure which package is in conflict.
+    response = requests.post(f"{server}/persist_attempt", json=attempt.dict())
     ic(server, (attempt.user_answer, response, time.time() - start))
     if response.status_code != 200:
-        ic(attempt.model_dump())
-        ic(response.json())
+        ic(response.status_code)
+        ic(attempt.dict())
+        ic(response.text)
 
 
 def make_toasts(state):
