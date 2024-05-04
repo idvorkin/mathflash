@@ -15,7 +15,7 @@ from pydantic import BaseModel
 
 class LogQuestionAttempt(BaseModel):
     user: str
-    current_time: datetime
+    current_time: str
     user: str
     a: int
     b: int
@@ -91,8 +91,10 @@ def persist_question_attempt(attempt: LogQuestionAttempt):
     # post a request to the server
 
     start = time.time()
-    response = requests.post(f"{server}/persist_attempt", attempt.model_dump())
+    ic(attempt.model_dump())
+    response = requests.post(f"{server}/persist_attempt", json=attempt.model_dump())
     ic(response, time.time() - start)
+    ic(response.json())
     pass
 
 
@@ -254,7 +256,7 @@ def on_submit_answer(state):
 
     def persist():
         duration = 9999
-        current_time = datetime.now()
+        current_time = str(datetime.now())
         attempt = LogQuestionAttempt(
             current_time=current_time,
             user=state.name,

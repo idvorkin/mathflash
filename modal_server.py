@@ -13,7 +13,9 @@ import random
 
 
 # setup modal app state
-image = Image.debian_slim().pip_install(["hyperdiv", "icecream", "requests"])
+image = Image.debian_slim().pip_install(
+    ["hyperdiv", "icecream", "requests", "pydantic"]
+)
 app = App("mathflash")  # Note: prior to April 2024, "app" was called "stub"
 app.image = image
 state = Dict.from_name(f"{app.name}-default-dict", create_if_missing=True)
@@ -39,10 +41,23 @@ def fastapi_app():
 
 @app.function()
 @web_app.post("/persist_attempt")
-async def persist_attempt( attempt: LogQuestionAttempt):
+async def persist_attempt(attempt: LogQuestionAttempt):
     # for now just write to a modal dict
     key = random.randint(0, 2_000_000_000)
-    question_attempts[key] = attempt.model_dump()  # type:ignore
+    attempt_as_dict = {
+        "time": attempt.current_time,
+        "user": attempt.user,
+        "a": attempt.a,
+        "b": attempt.b,
+        "operation": attempt.operation,
+        "right_answer": attempt.right_answer,
+        "user_answer": attempt.user_answer,
+        "correct": attempt.correct,
+        "duration": attempt.duration_in_milliseconds,
+        "other": attempt.other,
+    }
+    question_attempts[key] = attempt_as_dict  # type:ignore
+
 
 @app.function()
 @web_app.get("/attempts")
