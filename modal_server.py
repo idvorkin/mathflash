@@ -65,7 +65,8 @@ async def get_question_attempts():
     # for now just write to a modal dict
     # create a csv from question_attempts
     csv = "time,user,a,b,operation,right_answer,user_answer,correct,duration,other\n"
-    csv += "\n".join(question_attempts.values())
+    for _, attempt in question_attempts.items():
+        csv += f"{attempt['time']},{attempt['user']},{attempt['a']},{attempt['b']},{attempt['operation']},{attempt['right_answer']},{attempt['user_answer']},{attempt['correct']},{attempt['duration']},{attempt['other']}\n"
     return HTMLResponse(csv)
 
 
