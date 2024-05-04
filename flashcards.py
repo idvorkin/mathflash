@@ -1,6 +1,7 @@
 #!python3
 
 import requests
+import threading
 import utils
 from utils import operator_to_english, english_to_operator
 import hyperdiv as hd
@@ -85,17 +86,23 @@ def make_math_question(state):
 
 def persist_question_attempt(attempt: LogQuestionAttempt):
     # hard code for now
-    # server = "https://idvorkin--mathflash-fastapi-app.modal.run/"
-    server = "https://idvorkin--mathflash-fastapi-app-dev.modal.run"
+    server = "https://idvorkin--mathflash-fastapi-app.modal.run"  # prod
+    # server = "https://idvorkin--mathflash-fastapi-app-dev.modal.run" # dev
 
     # post a request to the server
 
     start = time.time()
-    ic(attempt.model_dump())
+    ic(
+        server,
+        attempt.user_answer,
+        attempt.duration_in_milliseconds,
+        attempt.current_time,
+    )
     response = requests.post(f"{server}/persist_attempt", json=attempt.model_dump())
-    ic(response, time.time() - start)
-    ic(response.json())
-    pass
+    ic(server, (attempt.user_answer, response, time.time() - start))
+    if response.status_code != 200:
+        ic(attempt.model_dump())
+        ic(response.json())
 
 
 def make_toasts(state):
@@ -254,10 +261,10 @@ def on_submit_answer(state):
     else:
         state.toast = ToastState.TryAgain
 
-    def persist():
+    def state_to_attempt(state):
         duration = 9999
         current_time = str(datetime.now())
-        attempt = LogQuestionAttempt(
+        return LogQuestionAttempt(
             current_time=current_time,
             user=state.name,
             a=state.n1,
@@ -269,9 +276,12 @@ def on_submit_answer(state):
             duration_in_milliseconds=duration,
             other="other-stuff-to-add",
         )
-        persist_question_attempt(attempt)
 
-    hd.task().run(persist)
+    attempt = state_to_attempt(state)
+    # run the persist function in a separate thread
+    threading.Thread(
+        target=persist_question_attempt, kwargs={"attempt": attempt}
+    ).start()
 
     # create a new question
     make_math_question(state)
