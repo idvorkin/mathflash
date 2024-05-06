@@ -11,7 +11,7 @@ from enum import Enum, auto
 from datetime import datetime, timedelta
 from icecream import ic
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class LogQuestionAttempt(BaseModel):
@@ -40,14 +40,38 @@ class ToastState(Enum):
     TryAgain = auto()
 
 
-def init_operator_state(operator, max):
+# This is a fake class to represent the types of state.
+# need to make sure anything you add to here gets added in state til hyperdiv does a nice bridge
+class FCState(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    name: str
+    questions: list[str]
+    total_question: int
+    questions_complete: int
+    max: int
+    operator: str
+    n1: int
+    n2: int
+    time_user_started_question: datetime
+    current_question: str
+    header: str
+    correct_answers: int
+    total_time: int
+    remaining_time: int
+    start_dialog_done: bool
+    game_state: FlashcardState
+    toast_start: datetime
+    toast: ToastState
+    input_box: hd.text_input
+
+
+def init_operator_state(operator, max) -> FCState:
     operator = english_to_operator.get(operator, operator)
     # hd.state is a singleton and only initalized on the first call to hd.state
     # on the webpage
 
     return hd.state(
         name="Mike",
-        user_input="",
         questions=[],
         total_question=10,
         questions_complete=0,
@@ -66,7 +90,7 @@ def init_operator_state(operator, max):
         toast_start=0.0,
         toast=ToastState.Empty,
         last_property=None,
-    )
+    )  # type:ignore
 
 
 def make_math_question(state):
@@ -201,7 +225,7 @@ def pretty_button(label, background_color="blue", width=4, pill=False, circle=Tr
 def make_number_pad(state):
     def make_button(n):
         if pretty_button(n).clicked:
-            state.user_input += n
+            state.input_box.value += n
 
     with make_row():
         make_button("1")
@@ -217,12 +241,12 @@ def make_number_pad(state):
         make_button("9")
     with make_row():
         if pretty_button("✖", background_color="yellow").clicked:
-            state.user_input = ""
+            state.input_box.value = ""
 
         make_button("0")
 
         if pretty_button("⌫", background_color="yellow").clicked:
-            state.user_input = state.user_input[:-1]
+            state.input_box.value = state.input_box.value[:-1]
 
 
 # We're going to try to complete {state.total_question} questions in {state.total_time} seconds.
@@ -245,14 +269,15 @@ def make_finished_dialog(state):
     dialog.opened = True
 
 
-def on_submit_answer(state):
-    valid_answer_attempt = state.user_input.isdigit()
+def on_submit_answer(state: FCState):
+    user_answer = str(state.input_box.value)
+    valid_answer_attempt = user_answer.isdigit()
     if not valid_answer_attempt:
         # Just clear invalid user input
-        state.user_input = ""
+        state.input_box.value = ""
         return
 
-    is_answer_correct = int(state.user_input) == utils.safe_eval(
+    is_answer_correct = int(user_answer) == utils.safe_eval(
         state.current_question.strip()
     )
 
@@ -275,9 +300,9 @@ def on_submit_answer(state):
             b=state.n2,
             operation=state.operator,
             right_answer=7,
-            user_answer=int(state.user_input),
+            user_answer=int(state.input_box.value),
             correct=is_answer_correct,
-            duration_in_milliseconds=int(duration.total_seconds() * 1000),
+            duration_in_milliseconds=int(duration.total_seconds() * 1_000),
             other="other-stuff-to-add",
         )
 
@@ -289,7 +314,7 @@ def on_submit_answer(state):
 
     # create a new question
     make_math_question(state)
-    state.user_input = ""
+    state.input_box.value = ""
 
 
 def operator_page(operator, max):
@@ -317,7 +342,8 @@ def operator_page(operator, max):
 
     # Draw the control buttons
     with make_row():
-        hd.text_input(value=state.user_input, placeholder="answer")
+        ti = hd.text_input(value="", placeholder="answer")
+        state.input_box = ti
         if hd.button("GO", background_color="green", font_color="neutral-50").clicked:
             on_submit_answer(state)
 
