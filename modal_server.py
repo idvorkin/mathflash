@@ -14,7 +14,7 @@ import socket
 
 # setup modal app state
 image = Image.debian_slim().pip_install(
-    ["hyperdiv", "icecream", "requests", "pydantic"]
+    ["hyperdiv", "icecream", "requests", "pydantic>2.7", "fastapi>0.110"]
 )
 app = App("mathflash")  # Note: prior to April 2024, "app" was called "stub"
 app.image = image
@@ -33,7 +33,7 @@ class KEY:
 web_app = FastAPI()
 
 
-@app.function(image=image)
+@app.function()
 @asgi_app()
 def fastapi_app():
     return web_app
