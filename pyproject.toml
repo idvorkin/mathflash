@@ -1,0 +1,28 @@
+[project]
+name = "mathflash"
+version = "0.1.0"
+description = "Your project description"
+authors = [
+    { name="Igor Dvorkin", email="idvorkin@gmail.com" }
+]
+
+
+[tool.poetry.dependencies]
+python = "^3.12"
+hyperdiv = "*"
+requests = "*"
+modal = "*"
+fastapi = "*"
+typer = "*"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "*"
+ruff = "*"
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["mathflash"]
+
