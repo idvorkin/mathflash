@@ -11,24 +11,28 @@ pipenv shell
 ```
 Run the debug server with:
 ```
-./main.py
-
+just run
 ```
+
 Deploy the server with the following command:
 ```
-modal deploy modal_server.py
+just deploy
 ```
 
-Do local testing of deployment environment with (but careful of caching)
+Do local testing of deployment environment with (but careful of caching):
 ```
-modal serve modal_server.py
+just serve
 ```
 
-See user stats with: https://idvorkin--mathflash-fastapi-app.modal.run/attempts. Use curl/wget and import to platform of your choice.
-
-    curl https://idvorkin--mathflash-fastapi-app.modal.run/attempts > foo.csv
+See user stats with:
+```
+just stats
+```
+This will save the stats to a file named `user_stats.csv`.
 
 You can pass in the operator and the maxnumber on the path:
 
-* http://localhost:8888/+/15
-* http://localhost:8888/*/15
+* For addition (max number 15): `just open-add`
+* For multiplication (max number 15): `just open-multiply`
+
+These commands will open the appropriate URL in your default web browser.
