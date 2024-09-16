@@ -74,6 +74,10 @@ async def get_question_attempts():
     return HTMLResponse(csv)
 
 
+class Config:
+    REFRESH_TIMEOUT = 1  # seconds
+
+
 @app.function()
 @web_app.get("/{full_path:path}")
 async def get_redirect_to_mathflash(request: Request, full_path: str):
@@ -95,21 +99,41 @@ async def get_redirect_to_mathflash(request: Request, full_path: str):
     margin: 0;
     padding: 0;
     height: 100%;
-    }}
+  }}
   iframe {{
     display: block;
     width: 100%;
     height: 100%;
     border: none;
   }}
+  #loading {{
+    display: none;
+    text-align: center;
+    padding-top: 50px;
+  }}
 </style>
+<script>
+  function checkIframeLoaded() {{
+    var iframe = document.getElementById('mathFlashFrame');
+    var loadingMessage = document.getElementById('loading');
+    
+    if (iframe.contentDocument.body.innerHTML.trim() === '') {{
+      loadingMessage.style.display = 'block';
+      setTimeout(function() {{
+        window.location.reload(1);
+      }}, {Config.REFRESH_TIMEOUT * 1000});
+    }}
+  }}
+</script>
 </head>
 <body>
-<iframe src="{url}"></iframe>
+<iframe id="mathFlashFrame" src="{url}" onload="checkIframeLoaded()"></iframe>
+<div id="loading">
+  <h1>Server not up yet... refreshing</h1>
+</div>
 </body>
 </html>
     """
-    # return RedirectResponse(, status_code=303)
     return HTMLResponse(html_page)
 
 
