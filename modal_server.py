@@ -13,8 +13,10 @@ import random
 import socket
 
 # setup modal app state
-image = Image.debian_slim().pip_install(
-    ["hyperdiv", "icecream", "requests", "pydantic>2.7", "fastapi>0.110"]
+image = (
+    Image.debian_slim(python_version="3.12")
+    .pip_install(["hyperdiv", "icecream", "requests", "pydantic>2.7", "fastapi"])
+    .copy_local_dir("assets", remote_path="/root/assets")
 )
 app = App("mathflash")  # Note: prior to April 2024, "app" was called "stub"
 app.image = image
@@ -116,8 +118,10 @@ async def get_redirect_to_mathflash(request: Request, full_path: str):
   function checkIframeLoaded() {{
     var iframe = document.getElementById('mathFlashFrame');
     var loadingMessage = document.getElementById('loading');
+
+    var not_loaded = iframe.contentDocument && iframe.contentDocument.body && iframe.contentDocument.body.innerHTML && iframe.contentDocument.body.innerHTML.trim() === '';
     
-    if (iframe.contentDocument.body.innerHTML.trim() === '') {{
+    if (not_loaded) {{
       loadingMessage.style.display = 'block';
       setTimeout(function() {{
         window.location.reload(1);
