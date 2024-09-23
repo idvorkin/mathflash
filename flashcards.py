@@ -5,6 +5,7 @@ import threading
 import utils
 from utils import operator_to_english, english_to_operator
 import hyperdiv as hd
+from keyboard_plugin import keyboard_capture
 import random
 import time
 from enum import Enum, auto
@@ -125,11 +126,13 @@ def persist_question_attempt(attempt: LogQuestionAttempt):
         attempt.current_time,
     )
     # annoying modal can't run pydantic 2.0 not sure which package is in conflict.
-    response = requests.post(f"{server}/persist_attempt", json=attempt.dict())
+    response = requests.post(
+        f"{server}/persist_attempt", json=attempt.model_dump_json()
+    )
     ic(server, (attempt.user_answer, response, time.time() - start))
     if response.status_code != 200:
         ic(response.status_code)
-        ic(attempt.dict())
+        ic(attempt.model_dump_json())
         ic(response.text)
 
 
@@ -317,11 +320,25 @@ def on_submit_answer(state: FCState):
     state.input_box.value = ""
 
 
+def handle_keyboard(state, keyboard):
+    if key := keyboard.pressed_event.lower():
+        ic(key)
+        # if key is a number, add it to the input box
+        if key in [str(i) for i in range(10)]:
+            state.input_box.value += key
+        if key == "backspace":
+            state.input_box.value = state.input_box.value[:-1]
+        if key == "return" or key == "enter":
+            on_submit_answer(state)
+
+
 def operator_page(operator, max):
     if operator not in utils.english_to_operator.keys():
         hd.markdown(f"Invalid operator: {operator}")
         return
 
+    keys_to_capture = [str(i) for i in range(10)] + ["backspace", "return", "enter"]
+    keyboard = keyboard_capture(capture=keys_to_capture)
     state = init_operator_state(operator, max)
     hd.markdown(make_header(state))
 
@@ -349,3 +366,4 @@ def operator_page(operator, max):
 
     make_number_pad(state)
     make_toasts(state)
+    handle_keyboard(state, keyboard)
